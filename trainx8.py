@@ -20,7 +20,7 @@ class OverSamplingCallback(LearnerCallback):
         sampler = WeightedRandomSampler(self.weights, self.total_len_oversample)
         self.data.train_dl = dl.new(shuffle=False, sampler=sampler)
 
-image_path = Path("./image_data/")
+path = Path("./image_data/")
 bs = 32
 np.random.seed(33)
 data = ImageDataBunch.from_folder(path,train='.',valid_pct=0.2, ds_tfms=get_transforms(flip_vert=False), size=299, bs=bs).normalize(imagenet_stats)
