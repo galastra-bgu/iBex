@@ -33,7 +33,7 @@ learn.lr_find()
 learn.recorder.plot(suggestion=True)
 min_grad_lr = learn.recorder.min_grad_lr
 
-learn.path = image_path/"learners"
+learn.path = path/"learners"
 learn.save('stage-1-x8') #should change name each time
 learn.fit_one_cycle(8, min_grad_lr)
 learn.export()
