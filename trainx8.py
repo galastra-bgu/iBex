@@ -30,7 +30,7 @@ data = ImageDataBunch.from_folder(path,train='.',valid_pct=0.2, ds_tfms=get_tran
 learn = cnn_learner(data, models.resnet50, metrics=error_rate, callback_fns=[OverSamplingCallback])
 
 learn.lr_find()
-#learn.recorder.plot(suggestion=True)
+learn.recorder.plot(suggestion=True)
 min_grad_lr = learn.recorder.min_grad_lr
 
 learn.path = image_path/"learners"
@@ -50,6 +50,7 @@ learn.export()
 """Now We unfreeze a second batch"""
 learn.unfreeze()
 learn.lr_find()
+learn.recorder.plot(suggestion=True)
 min_grad_lr = learn.recorder.min_grad_lr
 learn.fit_one_cycle(3,min_grad_lr)
 learn.save('stage-2-x8')
