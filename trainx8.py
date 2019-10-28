@@ -20,10 +20,10 @@ class OverSamplingCallback(LearnerCallback):
         sampler = WeightedRandomSampler(self.weights, self.total_len_oversample)
         self.data.train_dl = dl.new(shuffle=False, sampler=sampler)
 
-path = Path("./image_data/")
+image_path = Path("./image_data/")
 bs = 32
-np.random.seed(33)
-data = ImageDataBunch.from_folder(path,train='.',valid_pct=0.2, ds_tfms=get_transforms(flip_vert=False), size=299, bs=bs).normalize(imagenet_stats)
+np.random.seefid(33)
+data = ImageDataBunch.from_folder(image_path,train='.',valid_pct=0.2, ds_tfms=get_transforms(flip_vert=False), size=299, bs=bs).normalize(imagenet_stats)
 
 ## Training: resnet50
 
@@ -33,10 +33,12 @@ learn.lr_find()
 learn.recorder.plot(suggestion=True)
 min_grad_lr = learn.recorder.min_grad_lr
 
-learn.path = path/"learners"
-learn.save('stage-1-x8') #should change name each time
+learn.path = Path("./learners")
+print('*** started training1... ***')
 learn.fit_one_cycle(8, min_grad_lr)
-learn.export()
+learn.save('stage-1-x8')
+print('*** saved1 ***')
+#learn.export()
 
 #learn.recorder.plot_losses()
 #learn.recorder.plot_lr()
@@ -52,10 +54,11 @@ learn.unfreeze()
 learn.lr_find()
 learn.recorder.plot(suggestion=True)
 min_grad_lr = learn.recorder.min_grad_lr
+print('*** started training2... ***')
 learn.fit_one_cycle(3,min_grad_lr)
 learn.save('stage-2-x8')
-learn.path = image_parh/"learners2"
-learn.export()
+print('*** saved2 ****')
+#learn.export()
 #interp = ClassificationInterpretation.from_learner(learn)
 #interp.plot_confusion_matrix(figsize=(12,12), dpi=60)
 #interp.plot_top_losses(16, figsize=(15,11))
