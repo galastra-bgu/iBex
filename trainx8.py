@@ -22,7 +22,7 @@ class OverSamplingCallback(LearnerCallback):
 
 image_path = Path("./image_data/")
 bs = 32
-np.random.seefid(33)
+np.random.seed(33)
 data = ImageDataBunch.from_folder(image_path,train='.',valid_pct=0.2, ds_tfms=get_transforms(flip_vert=False), size=299, bs=bs).normalize(imagenet_stats)
 
 ## Training: resnet50
@@ -55,7 +55,7 @@ learn.lr_find()
 learn.recorder.plot(suggestion=True)
 min_grad_lr = learn.recorder.min_grad_lr
 print('*** started training2... ***')
-learn.fit_one_cycle(3,min_grad_lr)
+learn.fit_one_cycle(8, min_grad_lr)
 learn.save('stage-2-x8')
 print('*** saved2 ****')
 #learn.export()
