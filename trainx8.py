@@ -21,24 +21,24 @@ class OverSamplingCallback(LearnerCallback):
         self.data.train_dl = dl.new(shuffle=False, sampler=sampler)
 
 image_path = Path("./image_data/")
-bs = 32
+bs = 128 
 np.random.seed(33)
-data = ImageDataBunch.from_folder(image_path,train='.',valid_pct=0.2, ds_tfms=get_transforms(flip_vert=False), size=299, bs=bs).normalize(imagenet_stats)
+data = ImageDataBunch.from_folder(image_path,train='.',valid_pct=0.2, ds_tfms=get_transforms(flip_vert=False), size=299, bs=bs,num_workers=0).normalize(imagenet_stats)
 
 ## Training: resnet50
 
 learn = cnn_learner(data, models.resnet50, metrics=error_rate, callback_fns=[OverSamplingCallback])
+learn.path = Path("./learners")
 
 learn.lr_find()
 learn.recorder.plot(suggestion=True)
 min_grad_lr = learn.recorder.min_grad_lr
 
-learn.path = Path("./learners")
-print('*** started training1... ***')
-learn.fit_one_cycle(8, min_grad_lr)
+print('*** started training frozen... ***')
+learn.fit_one_cycle(12, min_grad_lr)
 learn.save('stage-1-x8')
-print('*** saved1 ***')
-#learn.export()
+print('*** saved frozen ***')
+learn.export()
 
 #learn.recorder.plot_losses()
 #learn.recorder.plot_lr()
@@ -54,11 +54,21 @@ learn.unfreeze()
 learn.lr_find()
 learn.recorder.plot(suggestion=True)
 min_grad_lr = learn.recorder.min_grad_lr
-print('*** started training2... ***')
-learn.fit_one_cycle(8, min_grad_lr)
-learn.save('stage-2-x8')
-print('*** saved2 ****')
-#learn.export()
+print('*** started unfrozen-1... ***')
+learn.fit_one_cycle(4, min_grad_lr)
+learn.save('stage-u-1-x8')
+print('*** saved unfrozen-1 ****')
+
+learn.unfreeze()
+learn.lr_find()
+learn.recorder.plot(suggestion=True)
+min_grad_lr = learn.recorder.min_grad_lr
+print('*** started unfrozen-2... ***')
+learn.fit_one_cycle(4, min_grad_lr)
+learn.save('stage-u-2-x8')
+print('*** saved unfrozen-2 ****')
+
+learn.export()
 #interp = ClassificationInterpretation.from_learner(learn)
 #interp.plot_confusion_matrix(figsize=(12,12), dpi=60)
 #interp.plot_top_losses(16, figsize=(15,11))
