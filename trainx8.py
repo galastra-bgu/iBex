@@ -1,6 +1,7 @@
 
 from fastai.vision import *
 from fastai.metrics import error_rate
+from fastai.callbacks import *
 from torch.utils.data.sampler import WeightedRandomSampler
 
 __all__ = ['OverSamplingCallback']
@@ -27,7 +28,7 @@ data = ImageDataBunch.from_folder(image_path,train='.',valid_pct=0.2, ds_tfms=ge
 
 ## Training: resnet50
 
-learn = cnn_learner(data, models.resnet50, metrics=error_rate, callback_fns=[OverSamplingCallback])
+learn = cnn_learner(data, models.resnet50, metrics=error_rate, callback_fns=[OverSamplingCallback,SaveModelCallback(learn, every='epoch', monitor='error_rate')])
 learn.path = Path("./learners")
 
 #learn.lr_find()
