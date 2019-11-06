@@ -21,7 +21,7 @@ class OverSamplingCallback(LearnerCallback):
         self.data.train_dl = dl.new(shuffle=False, sampler=sampler)
 
 image_path = Path("./image_data/")
-bs = 128 
+bs = 64 
 np.random.seed(33)
 data = ImageDataBunch.from_folder(image_path,train='.',valid_pct=0.2, ds_tfms=get_transforms(flip_vert=False), size=299, bs=bs,num_workers=0).normalize(imagenet_stats)
 
@@ -30,9 +30,10 @@ data = ImageDataBunch.from_folder(image_path,train='.',valid_pct=0.2, ds_tfms=ge
 learn = cnn_learner(data, models.resnet50, metrics=error_rate, callback_fns=[OverSamplingCallback])
 learn.path = Path("./learners")
 
-learn.lr_find()
-learn.recorder.plot(suggestion=True)
-min_grad_lr = learn.recorder.min_grad_lr
+#learn.lr_find()
+#learn.recorder.plot(suggestion=True)
+#min_grad_lr = learn.recorder.min_grad_lr
+min_grad_lr = 1e-3
 
 print('*** started training frozen... ***')
 learn.fit_one_cycle(12, min_grad_lr)
