@@ -55,6 +55,7 @@ learn.export()
 learn.unfreeze()
 learn.lr_find()
 learn.recorder.plot(suggestion=True)
+min_grad_lr = 1e-65
 try:
     min_grad_lr = learn.recorder.min_grad_lr
 except:
