@@ -24,7 +24,7 @@ class OverSamplingCallback(LearnerCallback):
 image_path = Path("./image_data/")
 bs = 64 
 np.random.seed(33)
-data = ImageDataBunch.from_folder(image_path,train='.',valid_pct=0.2, ds_tfms=get_transforms(flip_vert=False), size=299, bs=bs,num_workers=0).normalize(imagenet_stats)
+data = ImageDataBunch.from_folder(image_path,train='.',valid_pct=0.2, ds_tfms=get_transforms(flip_vert=False), size=512, bs=bs,num_workers=0).normalize(imagenet_stats)
 
 ## Training: resnet50
 
@@ -55,20 +55,15 @@ learn.export()
 learn.unfreeze()
 learn.lr_find()
 learn.recorder.plot(suggestion=True)
-min_grad_lr = learn.recorder.min_grad_lr
+try:
+    min_grad_lr = learn.recorder.min_grad_lr
+except:
+    min_grad_lr = 1e-65
 print('*** started unfrozen-1... ***')
-learn.fit_one_cycle(4, min_grad_lr,callbacks=[SaveModelCallback(learn, every='epoch', monitor='error_rate')])
+learn.path = Path("./learners/unfrozen")
+learn.fit_one_cycle(8, min_grad_lr,callbacks=[SaveModelCallback(learn, every='epoch', monitor='error_rate')])
 learn.save('stage-u-1-x8')
 print('*** saved unfrozen-1 ****')
-
-learn.unfreeze()
-learn.lr_find()
-learn.recorder.plot(suggestion=True)
-min_grad_lr = learn.recorder.min_grad_lr
-print('*** started unfrozen-2... ***')
-learn.fit_one_cycle(4, min_grad_lr,callbacks=[SaveModelCallback(learn, every='epoch', monitor='error_rate')])
-learn.save('stage-u-2-x8')
-print('*** saved unfrozen-2 ****')
 
 learn.export()
 #interp = ClassificationInterpretation.from_learner(learn)
