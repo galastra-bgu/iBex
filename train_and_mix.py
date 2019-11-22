@@ -37,7 +37,8 @@ learn.recorder.plot(suggestion=True)
 min_grad_lr = 1e-4
 try:
     min_grad_lr = learn.recorder.min_grad_lr
-
+except:
+    min_grad_lr = 1e-4
 print('*** started training frozen... ***')
 learn.fit_one_cycle(12, min_grad_lr,callbacks=[SaveModelCallback(learn, every='epoch', monitor='error_rate')])
 learn.save('mixup-x8-12')
