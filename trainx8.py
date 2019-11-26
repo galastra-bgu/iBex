@@ -20,11 +20,9 @@ class OverSamplingCallback(LearnerCallback):
         self.total_len_oversample = int(self.data.c*np.max(self.label_counts))
         sampler = WeightedRandomSampler(self.weights, self.total_len_oversample)
         self.data.train_dl = dl.new(shuffle=False, sampler=sampler)
-
-image_path = Path("./image_data/")
 bs = 64 
 np.random.seed(33)
-data = ImageDataBunch.from_folder(image_path,train='.',valid_pct=0.2, ds_tfms=get_transforms(flip_vert=False), size=512, bs=bs,num_workers=0).normalize(imagenet_stats)
+data = ImageDataBunch.from_folder("./image_data",train='.',valid_pct=0.2, ds_tfms=get_transforms(flip_vert=False), size=512, bs=bs,num_workers=0).normalize(imagenet_stats)
 
 ## Training: resnet50
 
@@ -55,6 +53,7 @@ learn.export()
 learn.unfreeze()
 learn.lr_find()
 learn.recorder.plot(suggestion=True)
+min_grad_lr = 1e-65
 try:
     min_grad_lr = learn.recorder.min_grad_lr
 except:
