@@ -40,7 +40,7 @@ def main():
         try:
             os.makedirs('./labeled/0',exist_ok=True)
             os.makedirs('./labeled/1')
-            print('Directories labeled/0 and labaled/1 create successfully')
+            print('Directories labeled/0 and labaled/1 created successfully')
         except OSError as error:
             print('labeled directories already exist, no need to make them')
 
