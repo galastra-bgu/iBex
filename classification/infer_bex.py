@@ -20,7 +20,6 @@ class OverSamplingCallback(LearnerCallback):
         sampler = WeightedRandomSampler(self.weights, self.total_len_oversample)
         self.data.train_dl = dl.new(shuffle=False, sampler=sampler)
 
-#is_ibex = lambda x :  'ibex' if x==1 else 'no-ibex'
 root_folder_path = sys.argv[1]
 
 #iterator for files
@@ -35,14 +34,21 @@ def label_images(folder_path):
     pred_tensor = torch.argmax(learn.get_preds(ds_type=DatasetType.Test)[0],dim=1)
     return pred_tensor
 
-try:
-    os.makedirs('./labeled/0',exist_ok=True)
-    os.makedirs('./labeled/1')
-    print('Directories labeled/0 and labaled/1 create successfully')
-except OSError as error:
-    print('labeled directories already exist, no need to make them')
+#main: 
+def main():
+    if os.path.isdir(root_folder_path):
+        try:
+            os.makedirs('./labeled/0',exist_ok=True)
+            os.makedirs('./labeled/1')
+            print('Directories labeled/0 and labaled/1 create successfully')
+        except OSError as error:
+            print('labeled directories already exist, no need to make them')
 
-pred_tensor = label_images(root_folder_path)
-for image_path,label in zip(flat_folder_iterator(root_folder_path),pred_tensor.tolist()):
-    shutil.copy2(image_path,'./labeled/'+str(label))
-print('done labeling')
+        pred_tensor = label_images(root_folder_path)
+        for image_path,label in zip(flat_folder_iterator(root_folder_path),pred_tensor.tolist()):
+            shutil.copy2(image_path,'./labeled/'+str(label))
+        print('done labeling')
+    else:
+        print('ERROR: directory does not exist')
+if __name__ == '__main__':
+    main()
