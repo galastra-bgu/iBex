@@ -24,8 +24,8 @@ bs = 64
 size = 299
 np.random.seed(33)
 #download images:
-download_images('./misc/downloads/download_links','./image_data/1/',max_pics=500)
-verify_images('./image_data/1/',delete=True)
+##download_images('./misc/downloads/download_links','./image_data/1/',max_pics=500)
+##verify_images('./image_data/1/',delete=True)
 
 data = ImageDataBunch.from_folder("./image_data",train='.',valid_pct=0.2, ds_tfms=get_transforms(flip_vert=False), size=size, bs=bs,num_workers=0).normalize(imagenet_stats)
 ## Training: resnet50
