@@ -31,8 +31,8 @@ data = ImageDataBunch.from_folder("./image_data",train='.',valid_pct=0.2, ds_tfm
 ## Training: resnet50
 
 learn = cnn_learner(data, models.resnet50, metrics=error_rate , callback_fns=[OverSamplingCallback])
-learn.load('best-x8')
 learn.path = Path("./learners/more_data/frozen")
+learn.load('bestmodel_3')
 min_grad_lr = 1e-4
 
 print('*** started training frozen... ***')
@@ -41,7 +41,7 @@ print('*** saved frozen ***')
 learn.export('frozen-moredata')
 
 """Now We unfreeze a second batch"""
-min_grad_lr = 1e-7
+min_grad_lr = 1e-6
 print('*** started unfrozen... ***')
 learn.path = Path("./learners/more_data/unfrozen")
 learn.fit_one_cycle(12, min_grad_lr,callbacks=[SaveModelCallback(learn, every='epoch', monitor='error_rate')])
