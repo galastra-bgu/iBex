@@ -33,30 +33,18 @@ data = ImageDataBunch.from_folder("./image_data",train='.',valid_pct=0.2, ds_tfm
 learn = cnn_learner(data, models.resnet50, metrics=error_rate , callback_fns=[OverSamplingCallback])
 learn.load('best-x8')
 learn.path = Path("./learners/more_data/frozen")
-
-learn.lr_find()
-learn.recorder.plot(suggestion=True)
-try:
-    min_grad_lr = learn.recorder.min_grad_lr
-except:
-    min_grad_lr = 1e-4
+min_grad_lr = 1e-4
 
 print('*** started training frozen... ***')
-learn.fit_one_cycle(4, min_grad_lr,callbacks=[SaveModelCallback(learn, every='epoch', monitor='error_rate')])
+learn.fit_one_cycle(8, min_grad_lr,callbacks=[SaveModelCallback(learn, every='epoch', monitor='error_rate')])
 print('*** saved frozen ***')
 learn.export('frozen-moredata')
 
 """Now We unfreeze a second batch"""
-learn.unfreeze()
-learn.lr_find()
-learn.recorder.plot(suggestion=True)
-try:
-    min_grad_lr = learn.recorder.min_grad_lr
-except:
-    min_grad_lr = 1e-7
+min_grad_lr = 1e-7
 print('*** started unfrozen... ***')
 learn.path = Path("./learners/more_data/unfrozen")
-learn.fit_one_cycle(4, min_grad_lr,callbacks=[SaveModelCallback(learn, every='epoch', monitor='error_rate')])
+learn.fit_one_cycle(12, min_grad_lr,callbacks=[SaveModelCallback(learn, every='epoch', monitor='error_rate')])
 
 learn.export('unfrozen-moredata')
 #interp = ClassificationInterpretation.from_learner(learn)
