@@ -34,7 +34,7 @@ learn = cnn_learner(data, models.resnet50, metrics=error_rate , callback_fns=[Ov
 learn.path = Path("./learners/more_data/frozen")
 learn.load('bestmodel_3')
 min_grad_lr = 1e-4
-
+learn.freeze()
 print('*** started training frozen... ***')
 learn.fit_one_cycle(8, min_grad_lr,callbacks=[SaveModelCallback(learn, every='epoch', monitor='error_rate')])
 print('*** saved frozen ***')
@@ -44,9 +44,27 @@ learn.export('frozen-moredata')
 min_grad_lr = 1e-6
 print('*** started unfrozen... ***')
 learn.path = Path("./learners/more_data/unfrozen")
+learn.unfreeze()
 learn.fit_one_cycle(12, min_grad_lr,callbacks=[SaveModelCallback(learn, every='epoch', monitor='error_rate')])
 
 learn.export('unfrozen-moredata')
+
+#now we make the size larger
+size = 512
+data = ImageDataBunch.from_folder("./image_data",train='.',valid_pct=0.2, ds_tfms=get_transforms(flip_vert=False), size=size, bs=bs,num_workers=0).normalize(imagenet_stats)
+learn.data = data
+leanr.path = Path("./learners/more_data/frozen-big")
+learn.freeze()
+min_grad_lr = 1e-5
+print('*** started training frozen-big')
+learn.fit_one_cycle(4, min_grad_lr,callbacks=[SaveModelCallback(learn, every='epoch', monitor='error_rate')])
+
+min_grad_lr = 1e-7
+learn.unfreeze()
+learn.path = Path('./learners/more_data/unfrozen-big')
+print('*** started training unfrozen-big')
+learn.fit_one_cycle(4, min_grad_lr,callbacks=[SaveModelCallback(learn, every='epoch', monitor='error_rate')])
+
 #interp = ClassificationInterpretation.from_learner(learn)
 #interp.plot_confusion_matrix(figsize=(12,12), dpi=60)
 #interp.plot_top_losses(16, figsize=(15,11))
