@@ -58,13 +58,14 @@ learn.freeze()
 min_grad_lr = 1e-5
 print('*** started training frozen-big')
 learn.fit_one_cycle(4, min_grad_lr,callbacks=[SaveModelCallback(learn, every='epoch', monitor='error_rate')])
+learn.export('frozen-big')
 
 min_grad_lr = 1e-7
 learn.unfreeze()
 learn.path = Path('./learners/more_data/unfrozen-big')
 print('*** started training unfrozen-big')
 learn.fit_one_cycle(4, min_grad_lr,callbacks=[SaveModelCallback(learn, every='epoch', monitor='error_rate')])
-
+learn.export('unfrozen-big')
 #interp = ClassificationInterpretation.from_learner(learn)
 #interp.plot_confusion_matrix(figsize=(12,12), dpi=60)
 #interp.plot_top_losses(16, figsize=(15,11))
