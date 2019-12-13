@@ -21,13 +21,14 @@ class OverSamplingCallback(LearnerCallback):
         sampler = WeightedRandomSampler(self.weights, self.total_len_oversample)
         self.data.train_dl = dl.new(shuffle=False, sampler=sampler)
 bs = 64 
+size = 299
 np.random.seed(33)
-data = ImageDataBunch.from_folder("./image_data",train='.',valid_pct=0.2, ds_tfms=get_transforms(flip_vert=False), size=512, bs=bs,num_workers=0).normalize(imagenet_stats)
+data = ImageDataBunch.from_folder("./image_data",train='.',valid_pct=0.2, ds_tfms=get_transforms(flip_vert=False), size=size, bs=bs,num_workers=0).normalize(imagenet_stats)
 
 ## Training: resnet50
 
 learn = cnn_learner(data, models.resnet50, metrics=error_rate , callback_fns=[OverSamplingCallback])
-learn.path = Path("./learners")
+learn.path = Path("./learners/more_data/frozen")
 
 #learn.lr_find()
 #learn.recorder.plot(suggestion=True)
@@ -35,10 +36,7 @@ learn.path = Path("./learners")
 min_grad_lr = 1e-4
 
 print('*** started training frozen... ***')
-learn.fit_one_cycle(12, min_grad_lr,callbacks=[SaveModelCallback(learn, every='epoch', monitor='error_rate')])
-learn.save('stage-1-x8')
-print('*** saved frozen ***')
-learn.export()
+learn.fit_one_cycle(12, min_grad_lr,callbacks=[SaveModelCallback(learn, every='epoch', monitor='error_rate')])learn.export()
 
 #learn.recorder.plot_losses()
 #learn.recorder.plot_lr()
@@ -53,18 +51,29 @@ learn.export()
 learn.unfreeze()
 learn.lr_find()
 learn.recorder.plot(suggestion=True)
-min_grad_lr = 1e-65
+min_grad_lr = 1e-6
 try:
     min_grad_lr = learn.recorder.min_grad_lr
 except:
-    min_grad_lr = 1e-65
+    min_grad_lr = 1e-6
 print('*** started unfrozen-1... ***')
-learn.path = Path("./learners/unfrozen")
+learn.path = Path("./learners/more_data/unfrozen")
 learn.fit_one_cycle(8, min_grad_lr,callbacks=[SaveModelCallback(learn, every='epoch', monitor='error_rate')])
-learn.save('stage-u-1-x8')
-print('*** saved unfrozen-1 ****')
 
 learn.export()
-#interp = ClassificationInterpretation.from_learner(learn)
-#interp.plot_confusion_matrix(figsize=(12,12), dpi=60)
-#interp.plot_top_losses(16, figsize=(15,11))
+
+#Now we make the size larger
+size = 512
+data = ImageDataBunch.from_folder("./image_data",train='.',valid_pct=0.2, ds_tfms=get_transforms(flip_vert=False), size=size, bs=bs,num_workers=0).normalize(imagenet_stats)
+learn.data = data
+learn.lr_find()
+learn.recorder.plot(suggestion=True)
+min_grad_lr = 1e-7
+try:
+    min_grad_lr = learn.recorder.min_grad_lr
+except:
+    min_grad_lr = 1e-7
+print('*** started unfrozen-2.... ***')
+learn.path = Path("./learners/more_data/bigger")
+learn.fit_one_cycle(8, min_grad_lr,callbacks=[SaveModelCallback(learn, every='epoch', monitor='error_rate')])
+learn.export()
