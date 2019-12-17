@@ -64,7 +64,7 @@ learn.export()
 
 #Now we make the size larger
 size = 512
-data = ImageDataBunch.from_folder("./image_data",train='.',valid_pct=0.2, ds_tfms=get_transforms(flip_vert=False), size=size, bs=bs,num_workers=0).normalize(imagenet_stats)
+data.train_dl.transfrom(tfms=get_transforms(flip_vert=False)[0],size=size)
 learn.data = data
 learn.lr_find()
 learn.recorder.plot(suggestion=True)

@@ -31,8 +31,8 @@ def flat_folder_iterator(root_folder):
 def label_images(folder_path):
     images2label = get_image_files(folder_path,recurse=True)
     learn = load_learner('./model/','trained.pkl',test=images2label)
-    pred_tensor = torch.argmax(learn.get_preds(ds_type=DatasetType.Test)[0],dim=1)
-    return pred_tensor
+    print(learn.get_preds(ds_type=DatasetType.Test,n_batch=1))
+    return learn.get_preds(ds_type=DatasetType.Test,n_batch=1)[0].argmax(dim=-1)
 
 #main: 
 def main():
