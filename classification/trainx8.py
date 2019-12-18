@@ -33,10 +33,10 @@ learn.path = Path("./learners/more_data/frozen")
 #learn.lr_find()
 #learn.recorder.plot(suggestion=True)
 #min_grad_lr = learn.recorder.min_grad_lr
-min_grad_lr = 1e-4
+#min_grad_lr = 1e-4
 
-print('*** started training frozen... ***')
-learn.fit_one_cycle(12, min_grad_lr,callbacks=[SaveModelCallback(learn, every='epoch', monitor='error_rate')])
+#print('*** started training frozen... ***')
+#learn.fit_one_cycle(12, min_grad_lr,callbacks=[SaveModelCallback(learn, every='epoch', monitor='error_rate')])
 
 #learn.recorder.plot_losses()
 #learn.recorder.plot_lr()
@@ -48,6 +48,9 @@ learn.fit_one_cycle(12, min_grad_lr,callbacks=[SaveModelCallback(learn, every='e
 #interp.plot_top_losses(18, figsize=(15,11))
 
 """Now We unfreeze a second batch"""
+
+learn.path = Path("./learners/more_data/unfrozen")
+learn.load('bestmodel_1.pth')
 learn.unfreeze()
 learn.lr_find()
 learn.recorder.plot(suggestion=True)
@@ -57,9 +60,8 @@ try:
 except:
     min_grad_lr = 1e-6
 print('*** started unfrozen-1... ***')
-learn.path = Path("./learners/more_data/unfrozen")
-learn.fit_one_cycle(8, min_grad_lr,callbacks=[SaveModelCallback(learn, every='epoch', monitor='error_rate')])
 
+learn.fit_one_cycle(8, min_grad_lr,callbacks=[SaveModelCallback(learn, every='epoch', monitor='error_rate')])
 learn.export()
 
 #Now we make the size larger
