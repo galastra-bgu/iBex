@@ -50,7 +50,7 @@ learn.path = Path("./learners/more_data/frozen")
 """Now We unfreeze a second batch"""
 
 learn.path = Path("./learners/more_data/unfrozen")
-learn.load('bestmodel_1.pth')
+learn.load('bestmodel_1')
 learn.unfreeze()
 learn.lr_find()
 learn.recorder.plot(suggestion=True)
