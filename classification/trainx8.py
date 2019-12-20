@@ -50,7 +50,7 @@ learn.path = Path("./learners/more_data/frozen")
 """Now We unfreeze a second batch"""
 
 learn.path = Path("./learners/more_data/unfrozen")
-learn.load('bestmodel_1')
+learn.load('bestmodel_3')
 learn.unfreeze()
 learn.lr_find()
 learn.recorder.plot(suggestion=True)
@@ -61,7 +61,7 @@ except:
     min_grad_lr = 1e-6
 print('*** started unfrozen-1... ***')
 
-learn.fit_one_cycle(8, min_grad_lr,callbacks=[SaveModelCallback(learn, every='epoch', monitor='error_rate')])
+learn.fit_one_cycle(4, min_grad_lr,callbacks=[SaveModelCallback(learn, every='epoch', monitor='error_rate')])
 learn.export()
 
 #Now we make the size larger
