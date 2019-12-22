@@ -20,7 +20,7 @@ class OverSamplingCallback(LearnerCallback):
         self.total_len_oversample = int(self.data.c*np.max(self.label_counts))
         sampler = WeightedRandomSampler(self.weights, self.total_len_oversample)
         self.data.train_dl = dl.new(shuffle=False, sampler=sampler)
-bs = 64 
+bs = 32 
 #size = 299
 size = 512
 np.random.seed(33)
