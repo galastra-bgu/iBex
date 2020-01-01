@@ -30,9 +30,9 @@ def flat_folder_iterator(root_folder):
 
 def label_images(folder_path):
     images2label = get_image_files(folder_path,recurse=True)
-    learn = load_learner('./model/','trained.pkl',test=images2label)
-    print(learn.get_preds(ds_type=DatasetType.Test,n_batch=1))
-    return learn.get_preds(ds_type=DatasetType.Test,n_batch=1)[0].argmax(dim=-1)
+    learn = load_learner('./model/','trained1269.pkl',test=images2label)
+    p = learn.get_preds(ds_type=DatasetType.Test,n_batch=8)
+    return p[0].argmax(dim=-1)
 
 #main: 
 def main():
