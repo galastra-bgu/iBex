@@ -32,6 +32,7 @@ learn = cnn_learner(data, models.resnet50, metrics=[accuracy,Precision(),Recall(
 learn.path = Path("./learners/endgame/frozen")
 
 learn.lr_find()
+learn.recorder.plot(suggestion=True)
 min_grad_lr = learn.recorder.min_grad_lr
 #min_grad_lr = 1e-4
 
@@ -41,6 +42,7 @@ learn.fit_one_cycle(12, min_grad_lr,callbacks=[SaveModelCallback(learn, every='e
 learn.path = Path("./learners/endgame/unfrozen")
 learn.unfreeze()
 learn.lr_find()
+learn.recorder.plot(suggestion=True)
 try:
     min_grad_lr = learn.recorder.min_grad_lr
 except:
