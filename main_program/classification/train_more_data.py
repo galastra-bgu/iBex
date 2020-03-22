@@ -1,4 +1,3 @@
-
 from fastai.vision import *
 from fastai.metrics import error_rate
 from fastai.callbacks import *
@@ -20,19 +19,18 @@ class OverSamplingCallback(LearnerCallback):
         self.total_len_oversample = int(self.data.c*np.max(self.label_counts))
         sampler = WeightedRandomSampler(self.weights, self.total_len_oversample)
         self.data.train_dl = dl.new(shuffle=False, sampler=sampler)
-bs = 64 
-size = 299
+bs = 24
+#size = 299
 np.random.seed(33)
 #download images:
-##download_images('./misc/downloads/download_links','./image_data/1/',max_pics=500)
-##verify_images('./image_data/1/',delete=True)
 
-data = ImageDataBunch.from_folder("./image_data",train='.',valid_pct=0.2, ds_tfms=get_transforms(flip_vert=False), size=size, bs=bs,num_workers=0).normalize(imagenet_stats)
+data = ImageDataBunch.from_folder("./image_data",train='.',valid_pct=0.2, ds_tfms=get_transforms(flip_vert=False), bs=bs,num_workers=4).normalize(imagenet_stats)
+#beware of num_workers, most errors are because of it !=0
+
 ## Training: resnet50
 
 learn = cnn_learner(data, models.resnet50, metrics=error_rate , callback_fns=[OverSamplingCallback])
-learn.path = Path("./learners/more_data/frozen")
-learn.load('bestmodel_3')
+learn.path = Path("./learners/endgame/frozen")
 min_grad_lr = 1e-4
 learn.freeze()
 print('*** started training frozen... ***')
