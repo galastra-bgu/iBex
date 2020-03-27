@@ -53,5 +53,9 @@ if __name__ == "__main__":
     trainfor(6,256)
     print('******************UNFROZEN BIGGER****
     learn.path=Path("./learners/endgame/unfrozen-bigger")
-    trainfor(12,512)
+    trainfor(4,512)
+    trainfor(4,512)
+    learn.export()
+    learn.path=Path("./learners/endgame/unfrozen-bigger2")
+    trainfor(1,1024)
     learn.export()
