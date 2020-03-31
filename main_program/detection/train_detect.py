@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import os
 import numpy as np
+from PIL import Image
 
 import pandas as pd
 from collections import defaultdict
@@ -28,7 +29,6 @@ class iBexDataset(object):
     self.pics = pics_path
     self.lbl_bbox = defaultdict(list)
     csv_path = os.scandir(csv_dir)
-    print(csv_path)
     self.df = pd.concat([pd.read_csv(cv) for cv in csv_path])
     for index,row in self.df.iterrows():
       img = row['image']
