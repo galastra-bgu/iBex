@@ -27,8 +27,9 @@ class iBexDataset(object):
     self.ts = ts
     self.pics = pics_path
     self.lbl_bbox = defaultdict(list)
-    csv_path = os.listdir(csv_dir)
-    self.df = pd.concat([pd.read_csv(cv) for os.fsdecode(cv) in csv_path])
+    csv_path = os.scandir(csv_dir)
+    print(csv_path)
+    self.df = pd.concat([pd.read_csv(cv) for cv in csv_path])
     for index,row in self.df.iterrows():
       img = row['image']
       label = row['label']
@@ -163,7 +164,7 @@ def train(num_epoch,freeze,weights=None):
 
     data_loader = torch.utils.data.DataLoader(
         dataset, batch_size=2, shuffle=True, num_workers=4,
-        collate_fn=collate_fn)
+        collate_fn=references.utils.collate_fn)
     #TODO: check if we can make the batch_size bigger
 
     data_loader_test = torch.utils.data.DataLoader(
