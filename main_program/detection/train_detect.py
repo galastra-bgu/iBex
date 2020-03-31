@@ -13,12 +13,12 @@ import pandas as pd
 from collections import defaultdict
 import torchvision.transforms as T
 
-from .detection.references.transforms import RandomHorizontalFlip as RandomHorizontalFlip
-from .detection.references.engine import train_one_epoch, evaluate
-import .detection.references.utils
+from references.transforms import RandomHorizontalFlip, Compose
+from references.engine import train_one_epoch, evaluate
+import references.utils
 
 PICS_PATH = ("./data4detect/1/")
-ANNOTATION_DIR = "./data4detect/annotation/") 
+ANNOTATION_DIR = "./data4detect/annotation/"
 DETECTION_WEIGHT = './detection_models/detected1.pth'
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
@@ -134,7 +134,7 @@ def get_model(num_classes,freeze=-1):
 def get_transform(train):
     ts = []
 
-    ts.append(ToTensor())
+    ts.append(T.ToTensor())
     if train:
       ts.append(T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])) #ImageNet properties
       ts.append(T.ColorJitter())
