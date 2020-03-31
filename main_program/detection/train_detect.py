@@ -28,7 +28,7 @@ class iBexDataset(object):
     self.pics = pics_path
     self.lbl_bbox = defaultdict(list)
     csv_path = os.listdir(csv_dir)
-    self.df = pd.concat([pd.read_csv(cv) for cv in csv_path])
+    self.df = pd.concat([pd.read_csv(cv) for os.fsdecode(cv) in csv_path])
     for index,row in self.df.iterrows():
       img = row['image']
       label = row['label']
