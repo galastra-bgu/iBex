@@ -3,7 +3,8 @@ import sys
 import time
 import torch
 import torchvision.models.detection.mask_rcnn
-from utils import *
+import utils
+from utils import MetricLogger
 
 
 def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq):
