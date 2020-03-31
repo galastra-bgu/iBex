@@ -13,21 +13,21 @@ import pandas as pd
 from collections import defaultdict
 import torchvision.transforms as T
 
-from detection.references.transforms import RandomHorizontalFlip as RandomHorizontalFlip
-from detection.references.engine import train_one_epoch, evaluate
-import detection.references.utils
+from .detection.references.transforms import RandomHorizontalFlip as RandomHorizontalFlip
+from .detection.references.engine import train_one_epoch, evaluate
+import .detection.references.utils
 
-PICS_PATH = ("/content/drive/Shared drives/ibex pic project/imageData-2-try/1/")
-CSV_PATH_LIST = [("/content/drive/Shared drives/ibex pic project/imageData-2-try/First-tag-try-22.10.19-export.csv")]
+PICS_PATH = ("./data4detect/1/")
+ANNOTATION_DIR = "./data4detect/annotation/") 
 DETECTION_WEIGHT = './detection_models/detected1.pth'
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
 class iBexDataset(object):
-  def __init__(self,pics_path,csv_path,ts):
+  def __init__(self,pics_path,csv_dir,ts):
     self.ts = ts
     self.pics = pics_path
     self.lbl_bbox = defaultdict(list)
-
+    csv_path = os.listdir(csv_dir)
     self.df = pd.concat([pd.read_csv(cv) for cv in csv_path])
     for index,row in self.df.iterrows():
       img = row['image']
@@ -57,22 +57,18 @@ class iBexDataset(object):
 
     im_id = idx
     idx = self.imgs[idx]
-    #print(idx)
     img_path = os.path.join(self.pics,idx)
     img = Image.open(img_path).convert("RGB")
     if len(self.lbl_bbox[idx])==0:
-      #imshow(np.asarray(img))
-      print(idx)
-      print(self.df.loc[self.df['image']==idx])
+      print('something bad with the lblbbox')
+      print('id: ',idx)
+      print('does image exist:', self.df.loc[self.df['image']==idx])
     boxes = torch.as_tensor([x[0] for x in self.lbl_bbox[idx]],dtype=torch.float32)
-    #boxes = torch.as_tensor([x[0] for x in self.lbl_bbox[idx] if x[1]=='ibex'],dtype=torch.float32)
     labels_not_ibex = [lbl for lbl in self.lbl_bbox[idx] ]
     iscrowd = torch.tensor([0])  if len(labels_not_ibex)==1 else torch.ones((len(labels_not_ibex),),dtype=torch.int64)
-    #print(boxes.shape)
     
     target = {'boxes': boxes,
               'labels':torch.as_tensor([label2ix(x[1]) for x in self.lbl_bbox[idx]]),
-              #'labels': torch.as_tensor([1 for x in self.lbl_bbox[idx] if x[1]=='ibex']),
               'image_id': torch.tensor([im_id]),
               'area': (boxes[:,3] - boxes[:,1]) * (boxes[:,2] - boxes[:,0]), 
               'iscrowd': iscrowd}
@@ -156,8 +152,8 @@ def train(num_epoch,freeze,weights=None):
     # our dataset has two classes only - background and person
     num_classes = 8 # +1 for background
     # use our dataset and defined transformations
-    dataset = iBexDataset(PICS_PATH,CSV_PATH_LIST, get_transform(train=True))
-    dataset_test = iBexDataset(PICS_PATH,CSV_PATH_LIST, get_transform(train=False))
+    dataset = iBexDataset(PICS_PATH,ANNOTATION_DIR, get_transform(train=True))
+    dataset_test = iBexDataset(PICS_PATH,ANNOTATION_DIR, get_transform(train=False))
 
     #split the dataset to train and test
     indices = torch.randperm(len(dataset)).tolist()
