@@ -144,7 +144,7 @@ def get_transform(train):
     
     return Compose(ts)
 
-def train(num_epoch,freeze,weights=None):
+def train(num_epochs,freeze,weights=None):
 
     TEST_SIZE = 50
     # train on the GPU or on the CPU, if a GPU is not available
@@ -165,7 +165,6 @@ def train(num_epoch,freeze,weights=None):
     data_loader = torch.utils.data.DataLoader(
         dataset, batch_size=2, shuffle=True, num_workers=4,
         collate_fn=references.utils.collate_fn)
-    #TODO: check if we can make the batch_size bigger
 
     data_loader_test = torch.utils.data.DataLoader(
         dataset_test, batch_size=1, shuffle=False, num_workers=4,
