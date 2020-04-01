@@ -4,7 +4,7 @@ import time
 import torch
 import torchvision.models.detection.mask_rcnn
 from references.utils import *
-from coco_eval import *
+from references.coco_eval import *
 
 
 def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq):
