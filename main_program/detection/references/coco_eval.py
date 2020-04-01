@@ -7,6 +7,8 @@ import time
 import torch
 import torch._six
 
+import torch
+import torchvision #maybe not, but we need to import pycocotools somehow
 from pycocotools.cocoeval import COCOeval
 from pycocotools.coco import COCO
 import pycocotools.mask as mask_util
