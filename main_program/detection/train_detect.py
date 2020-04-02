@@ -195,11 +195,12 @@ def train(num_epochs,freeze,weights=None):
         # update the learning rate
         lr_scheduler.step()
         # evaluate on the test dataset
-        evaluate(model, data_loader_test, device=device)
+    evaluate(model, data_loader_test, device=device) #FIXME: indent this!!
 
     torch.save(model.state_dict(),DETECTION_WEIGHT)
 
 def main():
+    train(0,0)
     train(6,0)
     train(6,1,DETECTION_WEIGHT)
     train(6,3,DETECTION_WEIGHT)
