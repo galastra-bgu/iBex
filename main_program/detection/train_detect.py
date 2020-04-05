@@ -182,7 +182,7 @@ def train(num_epochs,freeze,weights=None):
     lr = 0.0003
 
     if weights:
-        mode.load_state_dict(torch.load(DETECTION_WEIGHT))
+        model.load_state_dict(torch.load(DETECTION_WEIGHT))
         optimizer = torch.optim.SGD(params, lr=lr/10,momentum=0.9, weight_decay=0.0005)
         lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer,step_size=3,gamma=0.1)
     else:
@@ -195,13 +195,12 @@ def train(num_epochs,freeze,weights=None):
         # update the learning rate
         lr_scheduler.step()
         # evaluate on the test dataset
-    evaluate(model, data_loader_test, device=device) #FIXME: indent this!!
+        evaluate(model, data_loader_test, device=device) 
 
     torch.save(model.state_dict(),DETECTION_WEIGHT)
 
 def main():
-    train(0,0)
-    train(6,0)
+    #train(6,0)
     train(6,1,DETECTION_WEIGHT)
     train(6,3,DETECTION_WEIGHT)
     print("The training has been completed.")
