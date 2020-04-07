@@ -20,7 +20,7 @@ import references.utils
 
 PICS_PATH = ("./data4detect/1/")
 ANNOTATION_DIR = "./data4detect/annotation/"
-DETECTION_WEIGHT = './detection_models/detected1.pth'
+DETECTION_WEIGHT = './detection_models/detected_adam.pth'
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
 class iBexDataset(object):
@@ -163,7 +163,7 @@ def train(num_epochs,freeze,weights=None):
     dataset_test = torch.utils.data.Subset(dataset_test,indices[-TEST_SIZE:])
 
     data_loader = torch.utils.data.DataLoader(
-        dataset, batch_size=2, shuffle=True, num_workers=4,
+        dataset, batch_size=2, shuffle=True, num_workers=-1,
         collate_fn=references.utils.collate_fn)
 
     data_loader_test = torch.utils.data.DataLoader(
@@ -179,15 +179,19 @@ def train(num_epochs,freeze,weights=None):
     # construct an optimizer
     params = [p for p in model.parameters() if p.requires_grad]
 
-    lr = 0.0003
+    lr = 3e-5
 
     if weights:
         model.load_state_dict(torch.load(DETECTION_WEIGHT))
-        optimizer = torch.optim.SGD(params, lr=lr/10,momentum=0.9, weight_decay=0.0005)
-        lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer,step_size=3,gamma=0.1)
-    else:
-        optimizer = torch.optim.SGD(params, lr=lr,momentum=0.9, weight_decay=0.0005)
-        lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer,step_size=2,gamma=0.1)
+        lr = lr/10
+        # optimizer = torch.optim.SGD(params, lr=lr/10,momentum=0.9, weight_decay=0.0005)
+        # lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer,step_size=3,gamma=0.1)
+    optimizer = torch.optim.Adam(params,lr=lr)
+    lr_scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr=lr, steps_per_epoch=len(data_loader)//2, epochs=num_epochs)
+
+    # else:
+        # optimizer = torch.optim.SGD(params, lr=lr,momentum=0.9, weight_decay=0.0005)
+        # lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer,step_size=2,gamma=0.1)
 
     for epoch in range(num_epochs):
         # train for one epoch, printing every 100 iterations
@@ -200,7 +204,7 @@ def train(num_epochs,freeze,weights=None):
     torch.save(model.state_dict(),DETECTION_WEIGHT)
 
 def main():
-    #train(6,0)
+    train(8,0)
     train(6,1,DETECTION_WEIGHT)
     train(6,3,DETECTION_WEIGHT)
     print("The training has been completed.")
