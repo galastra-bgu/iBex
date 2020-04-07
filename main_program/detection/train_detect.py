@@ -163,7 +163,7 @@ def train(num_epochs,freeze,weights=None):
     dataset_test = torch.utils.data.Subset(dataset_test,indices[-TEST_SIZE:])
 
     data_loader = torch.utils.data.DataLoader(
-        dataset, batch_size=2, shuffle=True, num_workers=-1,
+        dataset, batch_size=2, shuffle=True, num_workers=8,
         collate_fn=references.utils.collate_fn)
 
     data_loader_test = torch.utils.data.DataLoader(
