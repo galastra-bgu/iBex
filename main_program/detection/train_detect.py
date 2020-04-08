@@ -121,7 +121,7 @@ def get_model(num_classes,freeze=-1):
   # be [0]. More generally, the backbone should return an
   # OrderedDict[Tensor], and in featmap_names you can choose which
   # feature maps to use.
-  roi_pooler = torchvision.ops.MultiScaleRoIAlign(featmap_names=['0'],
+  roi_pooler = torchvision.ops.MultiScaleRoIAlign(featmap_names=[0],
                                                   output_size=7,
                                                   sampling_ratio=2)
 
