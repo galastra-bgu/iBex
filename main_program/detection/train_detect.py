@@ -21,10 +21,14 @@ import references.utils
 PICS_PATH = ("./data4detect/1/")
 ANNOTATION_DIR = "./data4detect/annotation/"
 DETECTION_WEIGHT = './detection_models/detected_adam.pth'
+TEMP_WEIGHT_ROOT = './detection_models/tmp/'
+
+
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
 class iBexDataset(object):
   def __init__(self,pics_path,csv_dir,ts):
+    #TODO: filter - remove the label `ibex` if you have another label in the same x1y1x2y2 pos.
     self.ts = ts
     self.pics = pics_path
     self.lbl_bbox = defaultdict(list)
@@ -34,8 +38,15 @@ class iBexDataset(object):
       img = row['image']
       label = row['label']
       box = [x_left,y_bottom,x_right,y_top] = row['xmin'],row['ymin'],row['xmax'],row['ymax']
+
       self.lbl_bbox[img].append((box,label))
     self.imgs = [x for x in list(sorted(os.listdir(pics_path))) if x in self.lbl_bbox]
+    for img,annot in self.lbl_bbox.items():
+      for box,label in annot:
+        if label!='ibex' and box not in [b for b,l in annot]:
+          self.lbl_bbox[img].append((box,'ibex'))
+      
+  
 
   def __getitem__(self,idx):
     def label2ix(l):
@@ -179,7 +190,7 @@ def train(num_epochs,freeze,weights=None):
     # construct an optimizer
     params = [p for p in model.parameters() if p.requires_grad]
 
-    lr = 3e-5
+    lr = 3e-4
 
     if weights:
         model.load_state_dict(torch.load(DETECTION_WEIGHT))
@@ -205,7 +216,9 @@ def train(num_epochs,freeze,weights=None):
 
 def main():
     train(8,0)
+    torch.save(model.state_dict(),TEMP_WEIGHT_ROOT+'frozen.pth')
     train(6,1,DETECTION_WEIGHT)
+    torch.save(model.state_dict(),TEMP_WEIGHT_ROOT+'unfrozen_to_1.pth')
     train(6,3,DETECTION_WEIGHT)
     print("The training has been completed.")
 
