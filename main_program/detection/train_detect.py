@@ -43,7 +43,7 @@ class iBexDataset(object):
     self.imgs = [x for x in list(sorted(os.listdir(pics_path))) if x in self.lbl_bbox]
     for img,annot in self.lbl_bbox.items():
       for box,label in annot:
-        if label!='ibex' and box not in [b for b,l in annot]:
+        if label!='ibex' and box not in [b for b,l in annot if l=='ibex']:
           self.lbl_bbox[img].append((box,'ibex'))
       
   
