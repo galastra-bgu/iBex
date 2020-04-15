@@ -190,7 +190,7 @@ def train(num_epochs,freeze,weights=None):
     # construct an optimizer
     params = [p for p in model.parameters() if p.requires_grad]
 
-    lr = 3e-4
+    lr = 3e-5
 
     if weights:
         model.load_state_dict(torch.load(DETECTION_WEIGHT))
