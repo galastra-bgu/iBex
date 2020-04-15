@@ -195,9 +195,7 @@ def train(num_epochs,freeze,weights=None):
     if weights:
         model.load_state_dict(torch.load(DETECTION_WEIGHT))
         lr = lr/10
-        # optimizer = torch.optim.SGD(params, lr=lr/10,momentum=0.9, weight_decay=0.0005)
-        # lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer,step_size=3,gamma=0.1)
-    optimizer = torch.optim.Adam(params,lr=lr)
+    optimizer = torch.optim.Adam(params,lr=lr,weight_decay=1e-5)
     lr_scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr=lr, steps_per_epoch=len(data_loader)//2, epochs=num_epochs)
 
     # else:
