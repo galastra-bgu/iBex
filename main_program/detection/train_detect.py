@@ -211,11 +211,12 @@ def train(num_epochs,freeze,weights=None):
         evaluate(model, data_loader_test, device=device) 
 
     torch.save(model.state_dict(),DETECTION_WEIGHT)
+    return model
 
 def main():
-    train(8,0)
+    model = train(8,0)
     torch.save(model.state_dict(),TEMP_WEIGHT_ROOT+'frozen.pth')
-    train(6,1,DETECTION_WEIGHT)
+    model = train(6,1,DETECTION_WEIGHT)
     torch.save(model.state_dict(),TEMP_WEIGHT_ROOT+'unfrozen_to_1.pth')
     train(6,3,DETECTION_WEIGHT)
     print("The training has been completed.")
