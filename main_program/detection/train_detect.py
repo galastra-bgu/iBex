@@ -214,8 +214,10 @@ def train(num_epochs,freeze,weights=None):
     return model
 
 def main():
-    model = train(8,0)
-    torch.save(model.state_dict(),TEMP_WEIGHT_ROOT+'frozen.pth')
+    model = train(2,0)
+    torch.save(model.state_dict(),TEMP_WEIGHT_ROOT+'frozen1.pth')
+    model = train(6,0)
+    torch.save(model.state_dict(),TEMP_WEIGHT_ROOT+'frozen2.pth')
     model = train(6,1,DETECTION_WEIGHT)
     torch.save(model.state_dict(),TEMP_WEIGHT_ROOT+'unfrozen_to_1.pth')
     train(6,3,DETECTION_WEIGHT)
