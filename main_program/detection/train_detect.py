@@ -157,7 +157,7 @@ def get_transform(train):
 
 def train(num_epochs,freeze,weights=None):
 
-    TEST_SIZE = 50
+    TEST_SIZE = 100
     # train on the GPU or on the CPU, if a GPU is not available
     
 
@@ -214,13 +214,11 @@ def train(num_epochs,freeze,weights=None):
     return model
 
 def main():
-    model = train(2,0)
+    model = train(8)
     torch.save(model.state_dict(),TEMP_WEIGHT_ROOT+'frozen1.pth')
-    model = train(6,0)
-    torch.save(model.state_dict(),TEMP_WEIGHT_ROOT+'frozen2.pth')
-    model = train(6,1,DETECTION_WEIGHT)
+    model = train(4,1,DETECTION_WEIGHT)
     torch.save(model.state_dict(),TEMP_WEIGHT_ROOT+'unfrozen_to_1.pth')
-    train(6,3,DETECTION_WEIGHT)
+    train(4,3,DETECTION_WEIGHT)
     print("The training has been completed.")
 
 if __name__ == '__main__':
