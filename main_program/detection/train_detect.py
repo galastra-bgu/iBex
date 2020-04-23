@@ -155,7 +155,7 @@ def get_transform(train):
     
     return Compose(ts)
 
-def train(num_epochs,freeze,weights=None):
+def train(num_epochs,freeze=-1,weights=None):
 
     TEST_SIZE = 100
     # train on the GPU or on the CPU, if a GPU is not available
@@ -182,7 +182,7 @@ def train(num_epochs,freeze,weights=None):
         collate_fn=references.utils.collate_fn)
 
     # get the model using our helper function
-    model = get_model(num_classes)
+    model = get_model(num_classes,freeze)
 
     # move model to the right device
     model.to(device)
