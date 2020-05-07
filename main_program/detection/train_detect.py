@@ -17,6 +17,7 @@ import torchvision.transforms as T
 from references.transforms import RandomHorizontalFlip, Compose
 from references.engine import train_one_epoch, evaluate
 import references.utils
+from detect_bex import get_model
 
 PICS_PATH = ("./data4detect/1/")
 ANNOTATION_DIR = "./data4detect/annotation/"
@@ -92,56 +93,7 @@ class iBexDataset(object):
   def __len__(self):
     return len(self.imgs)
 
-def get_model(num_classes,freeze=-1):
-  WEIGHTS_PATH = 'main_program/classification/model/bestmodel-1269.pth'
-  pretrained_model = torch.load('main_program/classification/model/trained.pkl')['model']
 
-  pretrained_params = torch.load(WEIGHTS_PATH)['model'] #from the classification task i.e the first step of the project
-  pretrained_model.load_state_dict(pretrained_params)
-
-  modules = list(pretrained_model.children())[:-1]
-  backbone = nn.Sequential(*modules)
-  #we freeze all the layers untill the last one
-  if freeze < 0:
-    for param in backbone.parameters():
-      param.required_grad = False
-  else:
-    for child in list(backbone.children())[:-freeze]:
-      for param in child.parameters():
-        param.requires_grad = False
-
-
-  # FasterRCNN needs to know the number of
-  # output channels in a backbone. For resnet-50, it's 2048
-  # so we need to add it here
-
-  backbone.out_channels = 2048 
-
-  # let's make the RPN generate 5 x 3 anchors per spatial
-  # location, with 5 different sizes and 3 different aspect
-  # ratios. We have a Tuple[Tuple[int]] because each feature
-  # map could potentially have different sizes and
-  # aspect ratios
-  anchor_generator = AnchorGenerator(sizes=((32, 64, 128, 256, 512),),
-                                    aspect_ratios=((0.5, 1.0, 2.0),))
-
-  # let's define what are the feature maps that we will
-  # use to perform the region of interest cropping, as well as
-  # the size of the crop after rescaling.
-  # if your backbone returns a Tensor, featmap_names is expected to
-  # be [0]. More generally, the backbone should return an
-  # OrderedDict[Tensor], and in featmap_names you can choose which
-  # feature maps to use.
-  roi_pooler = torchvision.ops.MultiScaleRoIAlign(featmap_names=[0],
-                                                  output_size=7,
-                                                  sampling_ratio=2)
-
-  # put the pieces together inside a FasterRCNN model
-  model = FasterRCNN(backbone,
-                    num_classes=num_classes,
-                    rpn_anchor_generator=anchor_generator,
-                    box_roi_pool=roi_pooler)
-  return model
 
 def get_transform(train):
     ts = []
