@@ -16,7 +16,7 @@ from torchvision.models.detection.rpn import AnchorGenerator
 import pandas as pd
 from datetime import datetime
 import time
-
+import re
 
 DETECTION_WEIGHTS = 'model/model0205-adam-all.pth'
 #ibex_dir = '../labeled/1/'
@@ -27,7 +27,7 @@ device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cp
 @torch.no_grad()
 def draw_detection(img_path_list,model):
     model.eval()
-    ACCURACY_THRESHOLD = 0.60
+    #ACCURACY_THRESHOLD = 0.3 #changed from 0.6
     #prev_time = time.time()
     imgs = [Image.open(img_path) for img_path in img_path_list]
     imgs_size = [_img.size for _img in imgs]
@@ -87,8 +87,8 @@ def draw_detection(img_path_list,model):
     #         # plt.savefig(img_path.replace(".jpg", "-det.jpg"),bbox_inches='tight', pad_inches=0.0)
     #         plt.savefig(img_path,bbox_inches='tight', pad_inches=0.0)
     #time.sleep(0.1)
-    return [labels[l] for x in preds for (l,c) in zip (x['labels'],x['scores'])  if c>ACCURACY_THRESHOLD ]
-
+    return [(labels[l],c.item()) for x in preds for (l,c) in zip (x['labels'],x['scores']) ]
+    #return [{'label':labels[l],'confidence':c} for x in preds for (l,c) in zip(x['labels',x['scores']])]
 
 def get_model(num_classes,freeze=-1):
   WEIGHTS_PATH = 'main_program/classification/model/bestmodel-1269.pth'
@@ -145,55 +145,84 @@ def dic2csv(preds,filename_properties):
 
   #assert len(preds)== len(filename_properties)
   
-  columns = ['Filename','RelativePath','Folder','DateTime','Ibex Percentage(From Filter)','Total ibex','Females','Kids','Mature Males','Young Males','Undentified']
+  columns = ['Filename','RelativePath','Folder','DateTime','Year','Month','Day','Hour','Minute','Second','Total ibex','Females','Kids','Mature Males','Young Males','Undentified','Ibex Percentage(From Filter)']
   arr = [list(range(len(columns))) for _ in range(len(preds))] 
+  def get_date_as_numbers(date):
+    num_date = {}
+    date = re.split(':| ',date)
+    #NOTE: works only on trap cameras for now
+    num_date['year'] = date[0]
+    num_date['month'] = date[1]
+    num_date['day'] = date[2]
+    num_date['hour'] = date[3]
+    num_date['minute'] = date[4]
+    num_date['second'] = date[5]
+    return num_date
+
+
   for i,(name,l) in enumerate(preds.items()):
+      num_date = get_date_as_numbers(filename_properties[name][2])
       arr[i][0] = name
       arr[i][1] = filename_properties[name][0]
       arr[i][2] = filename_properties[name][1]
       arr[i][3] = filename_properties[name][2]
-      arr[i][4] = filename_properties[name][3]
-      arr[i][5] = len(l)
-      arr[i][6] = len([x for x in l if x=='female'])
-      arr[i][7] = len([x for x in l if x=='kid'])
-      arr[i][8] = len([x for x in l if x=='male adult'])
-      arr[i][9] = len([x for x in l if x=='young male'])
-      arr[i][10] = len([x for x in l if x=='vanilla ibex'])
+      arr[i][4] = num_date['year']
+      arr[i][5] = num_date['month']
+      arr[i][6] = num_date['day']
+      arr[i][7] = num_date['hour']
+      arr[i][8] = num_date['minute']
+      arr[i][9] = num_date['second']
+      arr[i][10] = len(l)
+      arr[i][11] = len([x for x in l if x=='female'])
+      arr[i][12] = len([x for x in l if x=='kid'])
+      arr[i][13] = len([x for x in l if x=='male adult'])
+      arr[i][14] = len([x for x in l if x=='young male'])
+      arr[i][15] = len([x for x in l if x=='vanilla ibex'])
+      arr[i][16] = filename_properties[name][3]
   
   df = pd.DataFrame(arr,columns=columns)
   return df
 
 def main(filename_properties):
     start_time = datetime.now()
-    writer = pd.ExcelWriter('output_detection.xlsx',engine = 'xlsxwriter')
+    dir_num_meaning = ['no_ibex','ibex','not_sure']
 
     model = get_model(6)
     model.load_state_dict(torch.load(DETECTION_WEIGHTS,map_location=device))
     for dir_num,ibex_dir in enumerate(ibex_dirs):
-    #dir_num = 1
-    #ibex_dir = ibex_dirs[1]
-      print('Attempting to draw',len(list(os.listdir(ibex_dir))),'ibexes')
+      print('Now for dir',ibex_dir)
 
-    #ibex_list = []
-    # for filename in os.listdir(ibex_dir):
-    #     #ibex_list+=[os.path.join(ibex_dir,filename)]
-    #     preds[filename]=draw_detection(
-    #         [os.path.join(ibex_dir,filename)],
-    #         model
-    #     )
-    #     time.sleep(10)
+      print('Attempting to draw',len(list(os.listdir(ibex_dir))),'ibexes')
       test_list = list(os.listdir(ibex_dir))
 
       preds = {x: draw_detection([os.path.join(ibex_dir,x)],model) for x in test_list} 
-      print('finished predicting')
-      df = dic2csv(preds,filename_properties)
-      #df.to_excel("output_detection.xlsx",sheet_name='detection_ibex_'+str(dir_num))
-      df.to_excel(writer,sheet_name='detection_ibex_'+str(dir_num))
-      df.to_excel('output_detection_'+str(dir_num)+'.xlsx',sheet_name='label'+str(dir_num)) #help if crash
-      #del df
-      del preds
-      time.sleep(30)
-    writer.save()
+      print(preds)
+      print('finished predicting',ibex_dir)
+      for confidence_rate in [0.4,0.5,0.6,0.7,0.8]:
+        print('Now for confidence level of',confidence_rate)
+        writer = pd.ExcelWriter('output_detection-'+dir_num_meaning[dir_num]+'-'+str(confidence_rate)+'.xlsx',engine = 'xlsxwriter')
+        get_confident_labels = lambda z: [y[0] for y in z if y[1]>confidence_rate]
+        conf_preds = {x:get_confident_labels(y) for (x,y) in preds.items()}
+      #dir_num = 1
+      #ibex_dir = ibex_dirs[1]
+        
+
+      #ibex_list = []
+      # for filename in os.listdir(ibex_dir):
+      #     #ibex_list+=[os.path.join(ibex_dir,filename)]
+      #     preds[filename]=draw_detection(
+      #         [os.path.join(ibex_dir,filename)],
+      #         model
+      #     )
+      #     time.sleep(10)
+        df = dic2csv(conf_preds,filename_properties)
+        #df.to_excel("output_detection.xlsx",sheet_name='detection_ibex_'+str(dir_num))
+        df.to_excel(writer,sheet_name='detection_ibex_'+str(dir_num))
+        #df.to_excel('output_detection_'+str(dir_num)+'.xlsx',sheet_name='label'+str(dir_num)) #help if crash
+        #del df
+        #time.sleep(30)
+        writer.save()
+
     print('Finished the excel part. Time: ',datetime.now() - start_time)
 
 
