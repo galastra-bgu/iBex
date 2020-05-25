@@ -44,5 +44,5 @@ if __name__ == "__main__":
     learn = learn.load("bestmodel-1269")
     # learn.eval()
     print('**********EVALUATING********')
-    learn.validate()
+    print(learn.validate())
     
