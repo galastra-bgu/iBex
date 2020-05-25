@@ -38,7 +38,7 @@ def trainfor(num_epochs,size):
 if __name__ == "__main__":
     bs = 32 
 
-    data : ImageDataBunch= ImageDataBunch.from_folder("./image_data",train='.',valid_pct=0.2, ds_tfms=get_transforms(flip_vert=False), size=50, bs=bs,num_workers=4).normalize(imagenet_stats)
+    data : ImageDataBunch= ImageDataBunch.from_folder("./image_data",train='.',valid_pct=0.2, ds_tfms=get_transforms(flip_vert=False), size=256, bs=bs,num_workers=4).normalize(imagenet_stats)
     learn = cnn_learner(data, models.resnet50, metrics=[accuracy,Precision(),Recall(),FBeta(),ConfusionMatrix()] , callback_fns=[OverSamplingCallback])
     learn.path = Path("./classification_models/more_data/unfrozen")
     learn = learn.load("bestmodel-1269")
