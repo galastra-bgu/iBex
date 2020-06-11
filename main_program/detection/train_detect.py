@@ -29,7 +29,6 @@ device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cp
 
 class iBexDataset(object):
   def __init__(self,pics_path,csv_dir,ts):
-    #TODO: filter - remove the label `ibex` if you have another label in the same x1y1x2y2 pos.
     self.ts = ts
     self.pics = pics_path
     self.lbl_bbox = defaultdict(list)

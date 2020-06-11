@@ -27,12 +27,12 @@ device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cp
 @torch.no_grad()
 def draw_detection(img_path_list,model):
     model.eval()
-    #ACCURACY_THRESHOLD = 0.3 #changed from 0.6
+    ACCURACY_THRESHOLD = 0.5 #changed from 0.6
     #prev_time = time.time()
     imgs = [Image.open(img_path) for img_path in img_path_list]
     imgs_size = [_img.size for _img in imgs]
     img2tensor = [i.to(device) for i in map(T.ToTensor(),imgs)]
-    #img2tensor = list(_img.to(device) for _img in [T.ToTensor()(img)])
+    #img2tensor = list(_img.to(device) for _img in [T.ToTensor()(img2tensor)])
     imgs = [np.array(_img) for _img in imgs]
 
     #print('okay, here we go')
@@ -43,51 +43,53 @@ def draw_detection(img_path_list,model):
     #print('hooray!')
     labels = ['background','female','kid','male adult','young male','vanilla ibex']
 
-    # cmap = plt.get_cmap('tab20b')
-    # bbox_colors = [cmap(i) for i in np.linspace(0,1,6)]
-    # for i,detections in enumerate(preds):
-    #     img = imgs[i]
-    #     img_path = img_path_list[i]
-    #     img_size = imgs_size[i]
-    #     plt.figure()
-    #     fig, ax = plt.subplots(1, figsize=(12,9))
-    #     ax.imshow(img)
+    cmap = plt.get_cmap('tab20b')
+    bbox_colors = [cmap(i) for i in np.linspace(0,1,6)]
+    for i,detections in enumerate(preds):
+        
+        img = imgs[i]
+        print(img)
+        img_path = img_path_list[i]
+        img_size = imgs_size[i]
+        plt.figure()
+        fig, ax = plt.subplots(1, figsize=(12,9))
+        ax.imshow(img)
 
-    #     pad_x = max(img.shape[0] - img.shape[1], 0) * (img_size[0] / max(img.shape))
-    #     pad_y = max(img.shape[1] - img.shape[0], 0) * (img_size[1] / max(img.shape))
-    #     unpad_h = img_size[1] - pad_y
-    #     unpad_w = img_size[0] - pad_x
+        pad_x = max(img.shape[0] - img.shape[1], 0) * (img_size[0] / max(img.shape))
+        pad_y = max(img.shape[1] - img.shape[0], 0) * (img_size[1] / max(img.shape))
+        unpad_h = img_size[1] - pad_y
+        unpad_w = img_size[0] - pad_x
 
-    #     labels = ['background','female','kid','male adult','young male','vanilla ibex']
-    #     if detections['boxes'] is not None:
-    #         unique_labels = detections['labels'].cpu().unique()
+        labels = ['background','female','kid','male adult','young male','vanilla ibex']
+        if detections['boxes'] is not None:
+            unique_labels = detections['labels'].cpu().unique()
             
 
-    #         # browse detections and draw bounding boxes
-    #         for box,label_id,score in zip(detections['boxes'],detections['labels'],detections['scores']):
-    #             if score < ACCURACY_THRESHOLD:
-    #                 continue
-    #             label = labels[label_id]
-    #             #[y_top,x_left,y_bottom,x_right]
-    #             [x1,y1,x2,y2] = box
+            # browse detections and draw bounding boxes
+            for box,label_id,score in zip(detections['boxes'],detections['labels'],detections['scores']):
+                if score < ACCURACY_THRESHOLD:
+                    continue
+                label = labels[label_id]
+                #[y_top,x_left,y_bottom,x_right]
+                [x1,y1,x2,y2] = box
                 
-    #             box_h = ((y2 - y1) / unpad_h) * img.shape[0]
-    #             box_w = ((x2 - x1) / unpad_w) * img.shape[1]
-    #             y1 = ((y1 - pad_y // 2) / unpad_h) * img.shape[0]
-    #             x1 = ((x1 - pad_x // 2) / unpad_w) * img.shape[1]
-    #             color = bbox_colors[label_id]
-    #             bbox = patches.Rectangle((x1, y1), box_w, box_h,
-    #                 linewidth=2, edgecolor=color, facecolor='none')
-    #             ax.add_patch(bbox)
-    #             plt.text(x1, y1, s=label+' '+str(score.item()*100)[:4]+'%', 
-    #                     color='white', verticalalignment='top',
-    #                     bbox={'color': color, 'pad': 0})
-    #         plt.axis('off')
-    #         # save image
-    #         # plt.savefig(img_path.replace(".jpg", "-det.jpg"),bbox_inches='tight', pad_inches=0.0)
-    #         plt.savefig(img_path,bbox_inches='tight', pad_inches=0.0)
-    #time.sleep(0.1)
-    return [(labels[l],c.item()) for x in preds for (l,c) in zip (x['labels'],x['scores']) ]
+                box_h = ((y2 - y1) / unpad_h) * img.shape[0]
+                box_w = ((x2 - x1) / unpad_w) * img.shape[1]
+                y1 = ((y1 - pad_y // 2) / unpad_h) * img.shape[0]
+                x1 = ((x1 - pad_x // 2) / unpad_w) * img.shape[1]
+                color = bbox_colors[label_id]
+                bbox = patches.Rectangle((x1, y1), box_w, box_h,
+                    linewidth=2, edgecolor=color, facecolor='none')
+                ax.add_patch(bbox)
+                plt.text(x1, y1, s=label+' '+str(score.item()*100)[:4]+'%', 
+                        color='white', verticalalignment='top',
+                        bbox={'color': color, 'pad': 0})
+            plt.axis('off')
+            # save image
+            # plt.savefig(img_path.replace(".jpg", "-det.jpg"),bbox_inches='tight', pad_inches=0.0)
+            plt.savefig(img_path,bbox_inches='tight', pad_inches=0.0)
+    time.sleep(0.1)
+    return [(labels[l],c.item()) for x in preds for (l,c) in zip (x['labels'],x['scores']) if c>ACCURACY_THRESHOLD]
     #return [{'label':labels[l],'confidence':c} for x in preds for (l,c) in zip(x['labels',x['scores']])]
 
 def get_model(num_classes,freeze=-1):
@@ -200,7 +202,7 @@ def main(filename_properties):
       print('finished predicting',ibex_dir)
       for confidence_rate in [0.4,0.5,0.6,0.7,0.8]:
         print('Now for confidence level of',confidence_rate)
-        writer = pd.ExcelWriter('output_detection-'+dir_num_meaning[dir_num]+'-'+str(confidence_rate)+'.xlsx',engine = 'xlsxwriter')
+        writer = pd.ExcelWriter('output_detection-'+dir_num_meaning[dir_num]+'-'+str(confidence_rate)+'_presentation.xlsx',engine = 'xlsxwriter')
         get_confident_labels = lambda z: [y[0] for y in z if y[1]>confidence_rate]
         conf_preds = {x:get_confident_labels(y) for (x,y) in preds.items()}
       #dir_num = 1

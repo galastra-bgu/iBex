@@ -5,8 +5,10 @@ from fastai.vision import *
 import pandas as pd
 from datetime import datetime
 from PIL import Image
-#loading this in order to get no errors while loading learner
+import itertools
+import argparse
 
+#loading this in order to get no errors while loading learner
 class OverSamplingCallback(LearnerCallback):
     def __init__(self,learn:Learner,weights:torch.Tensor=None):
         super().__init__(learn)
@@ -26,6 +28,7 @@ def label_images(imglist,batch_size,accuracy_thresh):
     accuracy_thresh_L,accuracy_thresh_R = accuracy_thresh
     # images2label = get_image_files(folder_path,recurse=True)
     learn = load_learner('main_program/classification//model/','trained1269.pkl',test=imglist)
+    # learn = load_learner('main_program/classification//model/','model2305_trained.pkl',test=imglist)
     p = learn.get_preds(ds_type=DatasetType.Test,n_batch=batch_size)
     labels = p[0].argmax(-1)
     m = p[0][:,1]
@@ -40,6 +43,16 @@ def group(iterator,count):
     itr = iter(iterator)
     while True:
         yield [next(itr) for i in range(count)]
+
+    # # it = itertools.zip_longest(*[iter(iterator)] * count)
+    # # while True:
+    # #     yield [next(itr) for i in range(count)]
+    # for i in it:
+    #     if i:
+    #         # print([x for x in i if x])
+    #         # yield [x for x in i if x]
+    #         yield list(filter(None,i))
+    # return (x for _, x in zip(range(count),iterator))
 
 def getImageFolder(rootfolder_path,img_path):
     # print('***getImageFolder')
@@ -86,7 +99,7 @@ def dic2csv(filename_properties):
         arr[i][10] = num_date['second']
 
     df = pd.DataFrame(arr,columns=columns)
-    df.to_excel("output_filter.xlsx",sheet_name="filter_ibex")
+    df.to_excel("output_filter_presentation.xlsx",sheet_name="filter_ibex")
     return df
 
 #main: 
@@ -123,10 +136,10 @@ def main():
         print('Found ',len(images2label),'image files')
 
         for imgs in group(images2label,batch_size):
-            #FIXME: the last group that is < batch_size get turnacated
             y_pred,ibex_percentage = label_images(imgs,batch_size,accuracy_thresh)
             y_pred,ibex_percentage = y_pred.tolist(), ibex_percentage.tolist()
             for image_path,label,ib_per in zip(imgs,y_pred,ibex_percentage):
+               
                 new_path = '../labeled/'+str(label)
                 old_name = new_path+'/'+image_path.name
                 parentFolder,year = getImageFolder(root_folder_path,image_path)
@@ -134,14 +147,13 @@ def main():
                 shutil.copy2(image_path,new_path)
                 shutil.move(old_name,new_name)
                 #if label==1:
-                print(image_path)
+                #print(image_path)
                 #get datetime of the image
                 try:
                     image_date = Image.open(image_path)._getexif()[36868]
                 except:
                     image_date = time.ctime(os.stat(image_path)[stat.ST_MTIME])
                 filename_properties[parentFolder+'-' +year+'-'+ str(image_path.name)] = (str(image_path),parentFolder,image_date, ib_per*100)
-                #filename_properties[parentFolder+'-' + str(image_path.name)] = (str(image_path),parentFolder)
                 if label==1:
                     total_ibex +=1
                 if label==0:
@@ -150,7 +162,7 @@ def main():
                     total_not_sure +=1
         
         dic2csv(filename_properties)
-        properties_file = open('filter_properties.txt',"w")
+        properties_file = open('filter_properties_presentation.txt',"w")
         properties_file.write("There were a total of {0} pictures.\n Folder stats:\n ibex: {1} ({2}%)\n no_ibex: {3} ({4}%)\n not_sure: {5} ({6}%)\n The accuracy threshold (L,R) is: ({7},{8})\n\n Time: {9}".format(
             len(images2label),
             total_ibex,100*total_ibex/len(images2label),
@@ -162,7 +174,6 @@ def main():
     else:
         print('ERROR: directory does not exist')
     return filename_properties
-
     
 if __name__ == '__main__':
     main()
