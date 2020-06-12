@@ -25,8 +25,8 @@ Download it (might take a while..) and then put it in <...>
 
 ## How to run
 
-# Contact me if needed:
-galastra[at]post.bgu.ac.il
+# Contact me if needed: galastra[at]post.bgu.ac.il
+
 
 ##TODO:
 - Easier running the python code (argument, help, etc.)
